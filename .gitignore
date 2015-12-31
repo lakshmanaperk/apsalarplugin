@@ -1,0 +1,27 @@
+#
+# Android
+#
+
+# local build settings
+local.properties
+ant.properties
+
+# built application files
+.ap_
+
+# files from dex VM
+*.dex
+*.apk
+# Java classes
+*.class
+
+# generated files
+bin/
+gen/
+resource.car
+
+#mac local files
+.DS_Store
+
+# other unwanted stuff
+*.swp
