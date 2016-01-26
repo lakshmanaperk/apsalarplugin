@@ -6,7 +6,7 @@
 //
 
 // This corresponds to the name of the Lua library,
-// e.g. [Lua] require "plugin.googleanalytics"
+// e.g. [Lua] require "plugin.apsalar"
 package plugin.apsalar;
 
 import java.util.HashMap;
@@ -47,8 +47,6 @@ public class LuaLoader implements JavaFunction, CoronaRuntimeListener {
 
 	private LuaState luaState = null;
 
-	 private boolean hasInitialized = false;
-
 	/**
 	 * Creates a new Lua interface to this plugin.
 	 * <p>
@@ -67,57 +65,68 @@ public class LuaLoader implements JavaFunction, CoronaRuntimeListener {
 
 
   /**
-     * Functions for [Lua: coronaads.init(APP_KEY)
+     * Functions for [Lua: CoronaApsalar.init(API_KEY, API_SECRET)
      */
     private int invokeInit(LuaState L) {
         luaState = L;
-        CoronaActivity coronaActivity = null;
-        if (CoronaEnvironment.getCoronaActivity() != null )
-        {
+        CoronaActivity coronaActivity = CoronaEnvironment.getCoronaActivity();
+        
+        //check if activity is not null
+        if ( coronaActivity!= null ){
             coronaActivity = CoronaEnvironment.getCoronaActivity();
-        }
-        
-        if (LuaType.STRING == luaState.type(1)) {
-            API_KEY = luaState.toString(1);
-        }
-        else
-        {
-        	throw new IllegalArgumentException("plugin.googleanalytics.init(apikey, app secret): apikey expected, got " + luaState.type(1));
-        }
-        if (LuaType.STRING == luaState.type(2)) {
-            API_SECRET = luaState.toString(2);
-        }
-        else
-        {
-        	throw new IllegalArgumentException("plugin.googleanalytics.init(apikey, app secret): app secret expected, got " + luaState.type(2));
-        }
-        
-        if(API_KEY.length() >0 && API_SECRET.length() > 0 && coronaActivity != null)
-        {
-        	hasInitialized = true;
-        	CoronaApsalar.init(coronaActivity, API_KEY,API_SECRET);
-        }
+        	//check if first arguement is string type else throw error 
+	        if (LuaType.STRING == luaState.type(1)) {
+	            API_KEY = luaState.toString(1);
+	        }
+	        else
+	        {
+	        	throw new IllegalArgumentException("ERROR:plugin.apsalar.init(apikey, app secret): apikey expected, got " + luaState.type(1));
+	        }
+        	//check if second arguement is string type else throw error 
+	        if (LuaType.STRING == luaState.type(2)) {
+	            API_SECRET = luaState.toString(2);
+	        }
+	        else
+	        {
+	        	throw new IllegalArgumentException("ERROR:plugin.apsalar.init(apikey, app secret): app secret expected, got " + luaState.type(2));
+	        }
+        	//check if both arguemtnts  are valid  else throw error 
+	        
+	        if(API_KEY.length() >0 && API_SECRET.length() > 0 )
+	        {
+	        	CoronaApsalar.init(coronaActivity, API_KEY,API_SECRET);
+	        }
+	        else
+	        {
+	        	throw new IllegalArgumentException("ERROR:plugin.apsalar.init(apikey, app secret): api key and app secret must not be empty, got " + luaState.type(1) + "  and " +luaState.type(2));
+	        }
+	    }
         return 0;
     }
 
     /**
-     * Functions for [Lua: coronaads.init(APP_KEY)
+     * Functions for [Lua: CoronaApsalar.logEvent(Event)
      */
     private int invokeLogEvent(LuaState L) {
         luaState = L;
 
         String event = "";
+        //check if first arguement is string type else throw error 
         if (LuaType.STRING == luaState.type(1)) {
             event = luaState.toString(1);
         }
         else
         {
-        	throw new IllegalArgumentException("plugin.apsalar.logEvent(event): event expected, got " + luaState.type(1));
+        	throw new IllegalArgumentException("ERROR:plugin.apsalar.logEvent(event): event expected, got " + luaState.type(1));
         }
-
-        if(event.length() >0)
+        //check if  arguemtnts  is valid  else throw error 
+        if(event.length() > 0)
         {
         	CoronaApsalar.sendevent(event);
+        }
+        else
+        {
+        	throw new IllegalArgumentException("ERROR:plugin.apsalar.logEvent(event): event and must not be empty, got " + luaState.type(1));
         }
         return 0;
     }
@@ -126,27 +135,29 @@ public class LuaLoader implements JavaFunction, CoronaRuntimeListener {
 
 
 	/**
-     * Initialise Google Analytics. [Lua: GA.init(APPKEY)]
+     * Initialise Apsalar SDK . [Lua: CoronaApsalar.init(APPKEY,APPSECRET)]
      */
     private class InitWrapper implements NamedJavaFunction {
 
+    	//lua name for the function
         public String getName() {
             return "init";
         }
-
+        // calls respective API
         public int invoke(LuaState L) {
             return invokeInit(L);
         }
     }
 	/**
-     * LogEvent Google Analytics. [Lua: GA.LogEventWrapper(Category, Action , Lable)]
+     * LogEvent CoronaApsalar. [Lua: CoronaApsalar.LogEvent(event)]
      */
     private class LogEventWrapper implements NamedJavaFunction {
 
+		//lua name for the function
         public String getName() {
             return "logEvent";
         }
-
+        // calls respective API
         public int invoke(LuaState L) {
             return invokeLogEvent(L);
         }

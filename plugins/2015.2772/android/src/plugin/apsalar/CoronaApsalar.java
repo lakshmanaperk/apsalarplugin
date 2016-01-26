@@ -27,11 +27,9 @@ public class CoronaApsalar {
         sInstance = new CoronaApsalar(context, appkey,appsecret);
         Apsalar.startSession(context, API_KEY,
                 APP_SECRET);
-        Log.v("APSALAR CORONA", "Corona  apslar the  key and secret   " + appkey + "   " + appsecret);
     }
 
     public static synchronized void sendevent(String event) {
         Apsalar.event(event);
-        Log.v("APSALAR CORONA", "Corona  apslar event is   " + event );
     }
 }
